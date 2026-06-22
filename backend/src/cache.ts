@@ -1,0 +1,35 @@
+interface Entry<T> {
+    value: T;
+    expiresAt: number;
+
+}
+
+export class LRUCache<T> {
+    private cache = new Map<string, Entry<T>>();
+    private ttlMS: number;
+
+
+    constructor(ttlSeconds: number) {
+        this.ttlMS = ttlSeconds * 1000;
+
+    }
+
+    get(key: string): T | null {
+        const entry = this.cache.get(key);
+        if (!entry) return null;
+
+        if (Date.now() > entry.expiresAt) {
+            this.cache.delete(key);
+            return null;
+        }
+        this.cache.delete(key);
+        this.cache.set(key, entry);
+        return entry.value;
+
+    }
+    set(key: string, value: T): void {
+        if (this.cache.has(key)) this.cache.delete(key);
+        this.cache.set(key, { value, expiresAt: Data.now() + this.ttlMS })
+    }
+
+}
