@@ -7,6 +7,7 @@ import { ForecastCard } from './components/ForecastCard';
 import { CurrentSkeleton, ForecastSkeleton } from './components/WeatherSkeleton';
 import { ErrorBanner } from './components/ErrorBanner';
 import { useWeather } from './useWeather';
+import { useSearchHistory } from './useSearchHistory';
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -16,12 +17,14 @@ const queryClient = new QueryClient({
 
 function AppContent() {
   const [submittedCity, setSubmittedCity] = useState('');
-  const [units] = useState<'metric' | 'imperial'>('metric');
+  const [units, setUnits] = useState<'metric' | 'imperial'>('metric');
+  const { history, addToHistory, removeFromHistory, clearHistory } = useSearchHistory();
 
   const { data, isLoading, isError, error, refetch } = useWeather(submittedCity, units);
 
   const handleSearch = (c: string) => {
     setSubmittedCity(c);
+    addToHistory(c);
   };
 
   const errMsg = isError ? (error as any)?.message || 'Failed to load weather' : '';
@@ -30,14 +33,33 @@ function AppContent() {
     <div className="min-h-screen">
       {/* Header */}
       <header className="py-8 px-4">
-        <div className="max-w-6xl mx-auto flex items-center justify-center gap-3">
-          <CloudSun className="w-10 h-10 text-weather-accent" />
-          <h1 className="text-3xl font-bold">Weather Forecast</h1>
+        <div className="max-w-6xl mx-auto flex items-center justify-between">
+          <div className="flex items-center gap-3 mx-auto">
+            <CloudSun className="w-10 h-10 text-weather-accent" />
+            <h1 className="text-3xl font-bold">Weather Forecast</h1>
+          </div>
+
+          {/* °C / °F toggle */}
+          <button
+            onClick={() => setUnits((u) => (u === 'metric' ? 'imperial' : 'metric'))}
+            className="flex items-center gap-1 bg-weather-card border border-white/10 rounded-xl px-4 py-2 text-sm font-medium hover:border-weather-accent/40 transition-all duration-200"
+            title="Toggle temperature unit"
+          >
+            <span className={units === 'metric' ? 'text-weather-accent' : 'text-weather-text-secondary'}>°C</span>
+            <span className="text-weather-text-secondary mx-1">/</span>
+            <span className={units === 'imperial' ? 'text-weather-accent' : 'text-weather-text-secondary'}>°F</span>
+          </button>
         </div>
       </header>
 
       <main className="max-w-6xl mx-auto px-4 pb-12 space-y-8">
-        <SearchBar onSearch={handleSearch} loading={isLoading} />
+        <SearchBar
+          onSearch={handleSearch}
+          loading={isLoading}
+          history={history}
+          onRemoveHistory={removeFromHistory}
+          onClearHistory={clearHistory}
+        />
 
         {isError && <ErrorBanner message={errMsg} onRetry={() => refetch()} />}
 
