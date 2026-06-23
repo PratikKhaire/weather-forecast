@@ -10,7 +10,13 @@ const app = express();
 
 // Security
 app.use(helmet());
-app.use(cors({ origin: config.PORT === '3001' ? '*' : process.env.FRONTEND_URL }));
+app.use(cors({
+  origin: process.env.FRONTEND_URL
+    ? process.env.FRONTEND_URL.split(',')   // supports comma-separated origins
+    : '*',                                  // allow all in dev
+  methods: ['GET'],
+  optionsSuccessStatus: 200,
+}));
 
 // Rate limiting — 100 requests per minute per IP
 app.use(
