@@ -1,0 +1,49 @@
+@import "tailwindcss";
+
+@theme {
+  --color-weather-bg: #0f172a;
+  --color-weather-card: #1e293b;
+  --color-weather-card-hover: #334155;
+  --color-weather-text: #f8fafc;
+  --color-weather-text-secondary: #94a3b8;
+  --color-weather-accent: #38bdf8;
+  --color-weather-accent-warm: #fbbf24;
+  --color-weather-error: #ef4444;
+
+  --font-sans: "Inter", system-ui, sans-serif;
+
+  --animate-fade-in: fadeIn 0.5s ease-out;
+  --animate-slide-up: slideUp 0.4s ease-out;
+  --animate-pulse-slow: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite;
+
+  @keyframes fadeIn {
+    0% {
+      opacity: 0;
+    }
+    100% {
+      opacity: 1;
+    }
+  }
+
+  @keyframes slideUp {
+    0% {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    100% {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  @apply bg-weather-bg text-weather-text font-sans antialiased;
+  background: linear-gradient(135deg, #0f172a 0%, #1e3a5f 50%, #0f172a 100%);
+  min-height: 100vh;
+}
