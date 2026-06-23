@@ -30,7 +30,9 @@ function AppContent() {
   const errMsg = isError ? (error as any)?.message || 'Failed to load weather' : '';
 
   return (
-    <div className="min-h-screen">
+    // w-full
+    <div className="min-h-screen w-full">
+
       {/* Header */}
       <header className="py-5 px-4 sm:py-8">
         <div className="max-w-6xl mx-auto flex items-center">
@@ -72,8 +74,8 @@ function AppContent() {
         {isLoading && submittedCity && <ForecastSkeleton />}
         {data && (
           <div className="animate-slide-up space-y-4">
-            <h3 className="text-xl font-semibold">7-Day Forecast</h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4">
+            <h3 className="text-lg sm:text-xl font-semibold">7-Day Forecast</h3>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-3 sm:gap-4">
               {data.forecast.map((day: any, i: number) => (
                 <ForecastCard key={day.date} day={day} units={units} isToday={i === 0} />
               ))}
@@ -82,9 +84,11 @@ function AppContent() {
         )}
 
         {!submittedCity && !isLoading && (
-          <div className="text-center py-20 animate-fade-in">
-            <CloudSun className="w-20 h-20 text-weather-text-secondary/30 mx-auto mb-4" />
-            <p className="text-weather-text-secondary text-lg">Search for a city to see the weather forecast</p>
+          <div className="text-center py-16 sm:py-20 animate-fade-in">
+            <CloudSun className="w-16 h-16 sm:w-20 sm:h-20 text-weather-text-secondary/30 mx-auto mb-4" />
+            <p className="text-weather-text-secondary text-base sm:text-lg">
+              Search for a city to see the weather forecast
+            </p>
           </div>
         )}
       </main>

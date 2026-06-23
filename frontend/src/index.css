@@ -1,6 +1,12 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 @import "tailwindcss";
 
+html {
+  overflow-x: hidden;
+  width: 100%;
+  background: #0f172a;
+}
+
 @theme {
   --color-weather-bg: #0f172a;
   --color-weather-card: #1e293b;
