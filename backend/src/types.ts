@@ -30,3 +30,9 @@ export interface DailyForecast {
     rainChance: number;
 
 }
+
+export interface WeatherResponse {
+    location: Location;
+    current: CurrentWeather;
+    forecast: DailyForecast[];
+}

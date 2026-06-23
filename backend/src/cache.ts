@@ -22,14 +22,17 @@ export class LRUCache<T> {
             this.cache.delete(key);
             return null;
         }
+
+        //move to end or most receunly use value 
         this.cache.delete(key);
         this.cache.set(key, entry);
         return entry.value;
 
     }
+    
     set(key: string, value: T): void {
         if (this.cache.has(key)) this.cache.delete(key);
-        this.cache.set(key, { value, expiresAt: Data.now() + this.ttlMS })
+        this.cache.set(key, { value, expiresAt: Date.now() + this.ttlMS })
     }
 
 }

@@ -3,7 +3,7 @@ import cors from 'cors';
 import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import { z } from 'zod';
-import { getWeather } from './weatherService';
+import { getWeather } from './weatherServices';
 import { config } from './config';
 
 const app = express();
@@ -40,7 +40,7 @@ app.get('/api/weather', async (req, res) => {
     if (!parsed.success) {
       return res.status(400).json({
         code: 'INVALID_INPUT',
-        message: parsed.error.errors[0].message,
+        message: parsed.error.issues[0]?.message || 'Invalid input',
         status: 400,
       });
     }

@@ -34,48 +34,81 @@ export async function getWeather(
     lon: geo.lon,
   };
 
-  // Step 2: Get weather data
-  const weatherRes = await axios.get(
-    `${config.OPENWEATHER_BASE_URL}/data/3.0/onecall`,
+  // Step 2: Get current weather 
+  const currentRes = await axios.get(
+    `${config.OPENWEATHER_BASE_URL}/data/2.5/weather`,
     {
       params: {
         lat: location.lat,
         lon: location.lon,
         units,
-        exclude: 'minutely,hourly,alerts',
         appid: config.OPENWEATHER_API_KEY,
       },
       timeout: 5000,
     }
   );
 
-  const data = weatherRes.data;
+  // Step 3: Get 5-day / 3-hour forecast
+  const forecastRes = await axios.get(
+    `${config.OPENWEATHER_BASE_URL}/data/2.5/forecast`,
+    {
+      params: {
+        lat: location.lat,
+        lon: location.lon,
+        units,
+        appid: config.OPENWEATHER_API_KEY,
+      },
+      timeout: 5000,
+    }
+  );
 
-  // Step 3: Transform to our format
+  const cw = currentRes.data;
+
   const current: CurrentWeather = {
-    temp: data.current.temp,
-    feelsLike: data.current.feels_like,
-    humidity: data.current.humidity,
-    windSpeed: data.current.wind_speed,
-    condition: data.current.weather[0]?.main || 'Unknown',
-    description: data.current.weather[0]?.description || 'No description',
-    icon: data.current.weather[0]?.icon || '01d',
+    temp: cw.main.temp,
+    feelsLike: cw.main.feels_like,
+    humidity: cw.main.humidity,
+    windSpeed: cw.wind.speed,
+    condition: cw.weather[0]?.main || 'Unknown',
+    description: cw.weather[0]?.description || 'No description',
+    icon: cw.weather[0]?.icon || '01d',
   };
 
-  const forecast: DailyForecast[] = data.daily.slice(0, 7).map((day: any) => {
-    const date = new Date(day.dt * 1000);
-    return {
-      date: date.toISOString().split('T')[0],
-      day: date.toLocaleDateString('en-US', { weekday: 'long' }),
-      tempMin: Math.round(day.temp.min),
-      tempMax: Math.round(day.temp.max),
-      humidity: day.humidity,
-      windSpeed: day.wind_speed,
-      condition: day.weather[0]?.main || 'Unknown',
-      icon: day.weather[0]?.icon || '01d',
-      rainChance: Math.round((day.pop || 0) * 100),
-    };
-  });
+  //.
+  // Group by day and take the midday (12:00) slot, or the first slot of each day.
+  const slotsByDay = new Map<string, any>();
+  for (const slot of forecastRes.data.list) {
+    const dateStr = new Date(slot.dt * 1000).toISOString().split('T')[0] as string;
+    const existing = slotsByDay.get(dateStr);
+    if (!existing) {
+      slotsByDay.set(dateStr, slot);
+    } else {
+      const existingHour = new Date(existing.dt * 1000).getUTCHours();
+      const slotHour = new Date(slot.dt * 1000).getUTCHours();
+      if (Math.abs(slotHour - 12) < Math.abs(existingHour - 12)) {
+        slotsByDay.set(dateStr, slot);
+      }
+    }
+  }
+
+  const forecast: DailyForecast[] = Array.from(slotsByDay.entries())
+    .slice(0, 7)
+    .map(([dateStr, slot]) => {
+      if (!dateStr || !slot) return null;
+      const date = new Date((slot.dt as number) * 1000);
+      return {
+        date: dateStr,
+        day: date.toLocaleDateString('en-US', { weekday: 'long' }),
+        tempMin: Math.round(slot.main.temp_min),
+        tempMax: Math.round(slot.main.temp_max),
+        humidity: slot.main.humidity,
+        windSpeed: slot.wind.speed,
+        condition: slot.weather[0]?.main || 'Unknown',
+        icon: slot.weather[0]?.icon || '01d',
+        rainChance: Math.round((slot.pop || 0) * 100),
+      } as DailyForecast;
+    })
+    .filter((d): d is DailyForecast => d !== null);
 
   const response: WeatherResponse = { location, current, forecast };
   cache.set(cacheKey, response);
