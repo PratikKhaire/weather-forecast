@@ -9,9 +9,8 @@ export class LRUCache<T> {
     private ttlMS: number;
 
 
-    constructor(ttlSeconds: number) {
+    constructor(ttlSeconds: number, private maxSize: number = 100) {
         this.ttlMS = ttlSeconds * 1000;
-
     }
 
     get(key: string): T | null {
@@ -32,7 +31,14 @@ export class LRUCache<T> {
     
     set(key: string, value: T): void {
         if (this.cache.has(key)) this.cache.delete(key);
-        this.cache.set(key, { value, expiresAt: Date.now() + this.ttlMS })
+
+        // Evict the least recently used (oldest) entry if at capacity
+        if (this.cache.size >= this.maxSize) {
+            const lruKey = this.cache.keys().next().value;
+            if (lruKey !== undefined) this.cache.delete(lruKey);
+        }
+
+        this.cache.set(key, { value, expiresAt: Date.now() + this.ttlMS });
     }
 
 }

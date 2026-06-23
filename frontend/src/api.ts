@@ -28,3 +28,9 @@ export async function getWeather(city: string, units: 'metric' | 'imperial' = 'm
   const res = await client.get('/weather', { params: { city, units } });
   return res.data;
 }
+
+/** Reverse geocode lat/lon → city name via backend */
+export async function getCityFromCoords(lat: number, lon: number): Promise<string> {
+  const res = await client.get('/geocode', { params: { lat, lon } });
+  return res.data.city as string;
+}
