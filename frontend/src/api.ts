@@ -1,7 +1,11 @@
 import axios from 'axios';
 
 const client = axios.create({
-  baseURL: import.meta.env.VITE_API_URL || 'http://localhost:3001/api',
+  // In production the API runs on the same Vercel deployment at /api.
+  // In local dev it talks to the Express server (or VITE_API_URL if set).
+  baseURL: import.meta.env.PROD
+    ? '/api'
+    : import.meta.env.VITE_API_URL || 'http://localhost:3001/api',
   timeout: 10000,
 });
 
